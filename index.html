@@ -61,6 +61,7 @@
   .pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:700;
     text-transform:uppercase;letter-spacing:.04em;color:#fff}
   .s-planned{background:var(--plan)} .s-scheduled{background:var(--sched)}
+  .s-doing{background:#3a6ea5} .s-waiting{background:#c25e2a}
   .s-published{background:var(--ok)} .s-paused{background:var(--pause)} .s-done{background:var(--done)}
   .chan{display:inline-block;padding:2px 8px;border-radius:6px;background:var(--sand);
     border:1px solid var(--line);font-size:11px}
@@ -134,6 +135,7 @@ const COLS=[
  {k:"clicks",t:"Clicks",num:1},{k:"trials",t:"Trials",num:1},{k:"foll",t:"Foll Δ",num:1},{k:"outcome",t:"Outcome"}
 ];
 let sortKey="date",sortDir=1;
+const ROWS=DATA.filter(d=>!d.parent);  // metrics view = top-level publications only (steps live in the Kanban)
 
 const $=s=>document.querySelector(s);
 const sum=(a,k)=>a.reduce((n,r)=>n+(r[k]||0),0);
@@ -141,14 +143,14 @@ const uniq=(a,k)=>[...new Set(a.map(r=>r[k]))].sort();
 
 /* KPIs */
 function renderKPIs(){
-  const pub=DATA.filter(r=>r.status==="published"||r.status==="done").length;
+  const pub=ROWS.filter(r=>r.status==="published"||r.status==="done").length;
   const tiles=[
-    ["Activities",DATA.length,""],
+    ["Activities",ROWS.length,""],
     ["Published",pub,""],
-    ["Planned",DATA.filter(r=>r.status==="planned"||r.status==="scheduled").length,""],
-    ["Trials",sum(DATA,"trials"),"attributed"],
-    ["Reach",fmt(sum(DATA,"reach")),"total"],
-    ["Followers Δ",sum(DATA,"foll"),"in-window"]
+    ["Planned",ROWS.filter(r=>["planned","doing","waiting","scheduled"].includes(r.status)).length,""],
+    ["Trials",sum(ROWS,"trials"),"attributed"],
+    ["Reach",fmt(sum(ROWS,"reach")),"total"],
+    ["Followers Δ",sum(ROWS,"foll"),"in-window"]
   ];
   $("#kpis").innerHTML=tiles.map(([l,v,s])=>
     `<div class="kpi"><div class="label">${l}</div><div class="val">${v} ${s?`<small>${s}</small>`:""}</div></div>`).join("");
@@ -165,14 +167,14 @@ function bars(el,counts){
 }
 function renderCharts(){
   const ch={},st={};
-  DATA.forEach(r=>{ch[r.channel]=(ch[r.channel]||0)+1;st[r.status]=(st[r.status]||0)+1});
+  ROWS.forEach(r=>{ch[r.channel]=(ch[r.channel]||0)+1;st[r.status]=(st[r.status]||0)+1});
   bars($("#byChannel"),ch); bars($("#byStatus"),st);
 }
 
 /* Filters + table */
 function initFilters(){
-  uniq(DATA,"channel").forEach(c=>$("#fChannel").insertAdjacentHTML("beforeend",`<option>${c}</option>`));
-  uniq(DATA,"status").forEach(s=>$("#fStatus").insertAdjacentHTML("beforeend",`<option>${s}</option>`));
+  uniq(ROWS,"channel").forEach(c=>$("#fChannel").insertAdjacentHTML("beforeend",`<option>${c}</option>`));
+  uniq(ROWS,"status").forEach(s=>$("#fStatus").insertAdjacentHTML("beforeend",`<option>${s}</option>`));
   ["#search","#fChannel","#fStatus"].forEach(s=>$(s).addEventListener("input",renderTable));
 }
 function head(){
@@ -186,7 +188,7 @@ function head(){
 }
 function renderTable(){
   const q=$("#search").value.toLowerCase(),fc=$("#fChannel").value,fs=$("#fStatus").value;
-  let rows=DATA.filter(r=>
+  let rows=ROWS.filter(r=>
     (!fc||r.channel===fc)&&(!fs||r.status===fs)&&
     (!q||[r.media,r.source,r.outcome,r.id].join(" ").toLowerCase().includes(q)));
   rows=rows.slice().sort((a,a2)=>{
@@ -205,7 +207,7 @@ function renderTable(){
     ${["reach","eng","clicks","trials","foll"].map(k=>`<td class="num">${r[k]==null?'<span class="dash">—</span>':r[k]}</td>`).join("")}
     <td>${r.outcome}</td>
   </tr>`).join("");
-  $("#countNote").textContent=`${rows.length} of ${DATA.length} activities`;
+  $("#countNote").textContent=`${rows.length} of ${ROWS.length} activities`;
 }
 
 if(SYNCED)$("#synced").textContent=SYNCED;

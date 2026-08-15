@@ -9,7 +9,8 @@
   :root{
     --green-1:#16543C; --green-2:#0A2C20; --cream:#F4F1E8; --sand:#EFE9DB;
     --ink:#123A2A; --muted:#5c6f64; --line:#d9d2c2; --card:#ffffff;
-    --plan:#b7892f; --sched:#3a6ea5; --pub:#2e7d5b; --pause:#9a9a9a; --done:#3f7a4e;
+    --plan:#b7892f; --doing:#3a6ea5; --waiting:#c25e2a; --pub:#2e7d5b; --done:#3f7a4e;
+    --block:#b23b3b;
     --shadow:0 1px 3px rgba(10,44,32,.10),0 6px 18px rgba(10,44,32,.06);
   }
   *{box-sizing:border-box}
@@ -29,8 +30,8 @@
   .tools button:hover{background:rgba(255,255,255,.22)}
   .tools select option{color:#123A2A}
   main{padding:18px}
-  .board{display:grid;grid-template-columns:repeat(5,minmax(210px,1fr));gap:14px;align-items:start}
-  @media(max-width:1000px){.board{grid-auto-flow:column;grid-template-columns:none;grid-auto-columns:78%;overflow-x:auto;scroll-snap-type:x mandatory}}
+  .board{display:grid;grid-template-columns:repeat(5,minmax(220px,1fr));gap:14px;align-items:start}
+  @media(max-width:1050px){.board{grid-auto-flow:column;grid-template-columns:none;grid-auto-columns:80%;overflow-x:auto;scroll-snap-type:x mandatory}}
   .col{background:var(--sand);border:1px solid var(--line);border-radius:14px;padding:10px;min-height:120px;scroll-snap-align:start}
   .col.drag-over{outline:2px dashed var(--green-1);outline-offset:-4px;background:#e7e0cf}
   .col h2{margin:2px 4px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;display:flex;
@@ -38,35 +39,42 @@
   .dot{width:9px;height:9px;border-radius:50%}
   .col .n{margin-left:auto;background:#fff;border:1px solid var(--line);border-radius:20px;
     padding:0 8px;font-size:11px;font-weight:700;color:var(--muted)}
-  .d-planned{background:var(--plan)} .d-scheduled{background:var(--sched)}
-  .d-published{background:var(--pub)} .d-paused{background:var(--pause)} .d-done{background:var(--done)}
+  .d-planned{background:var(--plan)} .d-doing{background:var(--doing)}
+  .d-waiting{background:var(--waiting)} .d-published{background:var(--pub)} .d-done{background:var(--done)}
+  .grp{font-size:10.5px;font-weight:700;color:var(--green-1);letter-spacing:.03em;text-transform:uppercase;
+    margin:8px 2px 5px;padding-left:6px;border-left:3px solid var(--green-1)}
   .card{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--line);
     border-radius:11px;padding:10px 11px;margin-bottom:9px;box-shadow:var(--shadow);cursor:grab}
   .card:active{cursor:grabbing}
   .card.dragging{opacity:.45}
-  .card.b-planned{border-left-color:var(--plan)} .card.b-scheduled{border-left-color:var(--sched)}
-  .card.b-published{border-left-color:var(--pub)} .card.b-paused{border-left-color:var(--pause)} .card.b-done{border-left-color:var(--done)}
+  .card.b-planned{border-left-color:var(--plan)} .card.b-doing{border-left-color:var(--doing)}
+  .card.b-waiting{border-left-color:var(--waiting)} .card.b-published{border-left-color:var(--pub)} .card.b-done{border-left-color:var(--done)}
+  .card.blocked{border-left-color:var(--block);background:#fdf6f4}
   .card .row1{display:flex;align-items:center;gap:6px;margin-bottom:5px}
   .card .id{font-size:10.5px;font-weight:800;color:var(--muted);letter-spacing:.03em}
-  .card .chan{margin-left:auto;font-size:10px;background:var(--sand);border:1px solid var(--line);
-    border-radius:6px;padding:1px 6px}
+  .card .chan{margin-left:auto;font-size:10px;background:var(--sand);border:1px solid var(--line);border-radius:6px;padding:1px 6px}
+  .card .ptag{margin-left:auto;font-size:10px;color:var(--green-1);background:#e8f0ea;border:1px solid #cfe0d3;border-radius:6px;padding:1px 6px}
   .card .title{font-size:12.5px;font-weight:600;line-height:1.3;margin-bottom:4px}
-  .card .sub{font-size:11px;color:var(--muted);margin-bottom:7px}
-  .card .metrics{display:flex;gap:5px;flex-wrap:wrap}
+  .card .sub{font-size:11px;color:var(--muted);margin-bottom:6px}
+  .dep{font-size:10px;border-radius:6px;padding:2px 7px;margin-bottom:6px;display:inline-block;line-height:1.35}
+  .dep.wait{background:#fbeae5;border:1px solid #f0c9bb;color:#a1401f}
+  .dep.ok{background:#eaf3ec;border:1px solid #cfe0d3;color:#2e5c46}
+  .metrics{display:flex;gap:5px;flex-wrap:wrap}
   .chip{font-size:10px;padding:1px 6px;border-radius:5px;background:#eef3ee;border:1px solid #dbe6dc;color:#2e5c46}
   .chip.off{background:#f3f1ea;border-color:var(--line);color:#b9b4a6}
   .modal{position:fixed;inset:0;background:rgba(10,44,32,.45);display:none;place-items:center;padding:20px;z-index:9}
   .modal.on{display:grid}
-  .modal .box{background:#fff;border-radius:14px;max-width:820px;width:100%;padding:18px;box-shadow:var(--shadow)}
+  .modal .box{background:#fff;border-radius:14px;max-width:900px;width:100%;padding:18px;box-shadow:var(--shadow)}
   .modal h3{margin:0 0 6px;font-size:15px}
   .modal p{margin:0 0 10px;font-size:12.5px;color:var(--muted)}
-  .modal textarea{width:100%;height:230px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;
+  .modal textarea{width:100%;height:250px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10.5px;
     border:1px solid var(--line);border-radius:9px;padding:10px;white-space:pre;overflow:auto}
   .modal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
   .modal button{font:inherit;font-size:12.5px;padding:8px 14px;border-radius:9px;border:1px solid var(--line);
     background:var(--green-1);color:var(--cream);cursor:pointer}
   .modal button.ghost{background:#fff;color:var(--ink)}
   footer{padding:6px 22px 26px;font-size:11.5px;color:var(--muted)}
+  footer b{color:var(--block)}
   a{color:var(--green-1)}
 </style>
 </head>
@@ -84,10 +92,10 @@
 
 <main><div class="board" id="board"></div></main>
 <footer>
-  Drag cards to change status. Then <b>Copy updated register</b> → paste over the table in
-  <code>01.01.06.05 - Marketing Dashboard.md</code>. That note stays the source of truth;
-  <code>marketing_sync.py</code> regenerates this board and the metrics dashboard.
-  <span id="synced"></span> · <a href="index.html">Metrics dashboard →</a>
+  Drag cards to change status. Steps grouped under <b style="color:var(--green-1)">↳ a play</b> are nested activities;
+  a <b>red</b> card is <b>blocked</b> until its dependency (⛓ after…) reaches Published/Done. Then
+  <b style="color:var(--green-1)">Copy updated register</b> → paste over the table in
+  <code>01.01.06.05 - Marketing Dashboard.md</code> (the source of truth). <span id="synced"></span> · <a href="index.html">Metrics dashboard →</a>
 </footer>
 
 <div class="modal" id="modal"><div class="box">
@@ -103,46 +111,74 @@
 <script>
 /* ==== DATA (mirrors the Activity register in 01.01.06.05 - Marketing Dashboard.md) ==== */
 const DATA = [
- {id:"A001",status:"planned",date:"2026-08-18",source:"First 100 Anglers",media:"instagram-feed-1080x1350.png",channel:"IG Feed",path:"01.01.06.02 assets",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:'Launch hero — "Every cast, remembered."'},
- {id:"A002",status:"planned",date:"2026-08-18",source:"First 100 Anglers",media:"instagram-story-1080x1920.png",channel:"IG Story",path:"01.01.06.02 assets",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"Same-day story + link sticker"},
- {id:"A003",status:"planned",date:"2026-08-18",source:"First 100 Anglers",media:"facebook-1200x630.png",channel:"FB Page",path:"01.01.06.02 assets",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"Launch post"},
- {id:"A004",status:"planned",date:"2026-08-20",source:"First 100 Anglers",media:"plain text (honest solo-dev)",channel:"Reddit r/flyfishing",path:"launch-copy.md",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"Message mods first; reply to every comment"},
- {id:"A005",status:"planned",date:"2026-08-22",source:"First 100 Anglers",media:"own on-water clip",channel:"IG Reel",path:"(to film)",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"First Reel — cast → log catch"},
- {id:"A006",status:"planned",date:"2026-08-25",source:"First 100 Anglers",media:"square-1080x1080.png",channel:"Reddit r/iosapps",path:"launch-copy.md",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"Technical variant + image"},
- {id:"A007",status:"planned",date:"2026-08-27",source:"First 100 Anglers",media:"text, group-framed",channel:"FB Group",path:"(per group)",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"Staggered across 3–4 groups"},
- {id:"A008",status:"planned",date:"2026-09-01",source:"First 100 Anglers",media:"free offer codes + DM",channel:"Creator",path:"(outreach list)",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"Seed 15–20 fly-fishing creators"},
- {id:"A009",status:"planned",date:"2026-09-08",source:"First 100 Anglers",media:"thumbnail + tagline",channel:"Product Hunt",path:"(optional)",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"Optional week-5 spike"}
+ {id:"A001",status:"planned",date:"2026-08-18",source:"First 100 Anglers",media:"instagram-feed-1080x1350.png",channel:"IG Feed",path:"01.01.06.02 assets",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:'Launch hero — "Every cast, remembered."',parent:null,blockedBy:[]},
+ {id:"A002",status:"planned",date:"2026-08-18",source:"First 100 Anglers",media:"instagram-story-1080x1920.png",channel:"IG Story",path:"01.01.06.02 assets",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"Same-day story + link sticker",parent:null,blockedBy:[]},
+ {id:"A003",status:"planned",date:"2026-08-18",source:"First 100 Anglers",media:"facebook-1200x630.png",channel:"FB Page",path:"01.01.06.02 assets",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"Launch post",parent:null,blockedBy:[]},
+ {id:"A004",status:"planned",date:"2026-08-20",source:"First 100 Anglers",media:"r/flyfishing launch thread",channel:"Reddit r/flyfishing",path:"01.01.06.06 - Reddit Launch Post",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"The play — see nested steps",parent:null,blockedBy:[]},
+ {id:"A004a",status:"waiting",date:"2026-08-18",source:"First 100 Anglers",media:"1 · Message the mods (modmail)",channel:"Reddit r/flyfishing",path:"01.01.06.06 - Reddit Launch Post",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"Sent; awaiting reply",parent:"A004",blockedBy:[]},
+ {id:"A004b",status:"planned",date:"2026-08-19",source:"First 100 Anglers",media:"2 · Prep reply answers + 3 screenshots",channel:"Reddit r/flyfishing",path:"01.01.06.06 - Reddit Launch Post",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"Record / Log / Flybox shots ready",parent:"A004",blockedBy:[]},
+ {id:"A004c",status:"planned",date:"2026-08-20",source:"First 100 Anglers",media:"3 · Publish the post (no link in body)",channel:"Reddit r/flyfishing",path:"launch-copy.md",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"After mods OK + prep done",parent:"A004",blockedBy:["A004a","A004b"]},
+ {id:"A004d",status:"planned",date:"2026-08-20",source:"First 100 Anglers",media:"4 · Link as first comment (if allowed)",channel:"Reddit r/flyfishing",path:"anglerbook.fun",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"Or on request only",parent:"A004",blockedBy:["A004c"]},
+ {id:"A004e",status:"planned",date:"2026-08-20",source:"First 100 Anglers",media:"5 · Reply to every comment (first 2–3h)",channel:"Reddit r/flyfishing",path:"—",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"The real work; ranks the thread",parent:"A004",blockedBy:["A004c"]},
+ {id:"A004f",status:"planned",date:"2026-08-20",source:"First 100 Anglers",media:"6 · Log result + watch trials 48h",channel:"Reddit r/flyfishing",path:"01.01.06.05 - Marketing Dashboard",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"Flip A004 to published, paste URL",parent:"A004",blockedBy:["A004c"]},
+ {id:"A005",status:"planned",date:"2026-08-22",source:"First 100 Anglers",media:"own on-water clip",channel:"IG Reel",path:"(to film)",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"First Reel — cast → log catch",parent:null,blockedBy:[]},
+ {id:"A006",status:"planned",date:"2026-08-25",source:"First 100 Anglers",media:"square-1080x1080.png",channel:"Reddit r/iosapps",path:"launch-copy.md",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"Technical variant + image",parent:null,blockedBy:[]},
+ {id:"A007",status:"planned",date:"2026-08-27",source:"First 100 Anglers",media:"text, group-framed",channel:"FB Group",path:"(per group)",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"Staggered across 3–4 groups",parent:null,blockedBy:[]},
+ {id:"A008",status:"planned",date:"2026-09-01",source:"First 100 Anglers",media:"free offer codes + DM",channel:"Creator",path:"(outreach list)",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"Seed 15–20 fly-fishing creators",parent:null,blockedBy:[]},
+ {id:"A009",status:"planned",date:"2026-09-08",source:"First 100 Anglers",media:"thumbnail + tagline",channel:"Product Hunt",path:"(optional)",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"Optional week-5 spike",parent:null,blockedBy:[]}
 ];
 const SYNCED = null;
 
-const COLUMNS=["planned","scheduled","published","paused","done"];
-const LABEL={planned:"Planned",scheduled:"Scheduled",published:"Published",paused:"Paused",done:"Done"};
+const COLUMNS=["planned","doing","waiting","published","done"];
+const LABEL={planned:"Planned",doing:"Doing",waiting:"Waiting",published:"Published",done:"Done"};
+const DONE=new Set(["published","done"]);
 const $=s=>document.querySelector(s);
 let filter="";
+let byId={}; DATA.forEach(d=>byId[d.id]=d);
 
+function isBlocked(d){return (d.blockedBy||[]).some(id=>byId[id]&&!DONE.has(byId[id].status));}
 function initFilter(){
-  [...new Set(DATA.map(d=>d.channel))].sort().forEach(c=>
+  [...new Set(DATA.filter(d=>!d.parent||true).map(d=>d.channel))].sort().forEach(c=>
     $("#fChannel").insertAdjacentHTML("beforeend",`<option>${c}</option>`));
   $("#fChannel").addEventListener("change",e=>{filter=e.target.value;render();});
 }
-function chip(label,v){return `<span class="chip ${v==null?'off':''}">${label} ${v==null?'—':v}</span>`;}
+function chip(l,v){return `<span class="chip ${v==null?'off':''}">${l} ${v==null?'—':v}</span>`;}
+function depBadge(d){
+  if(!d.blockedBy||!d.blockedBy.length) return "";
+  const names=d.blockedBy.map(id=>byId[id]?byId[id].media.replace(/^\d+ · /,''):id).join(", ");
+  const blk=isBlocked(d);
+  return `<div class="dep ${blk?'wait':'ok'}">${blk?'⛓ after: ':'✓ ready — was after: '}${names}</div>`;
+}
 function cardHTML(d){
-  return `<div class="card b-${d.status}" draggable="true" data-id="${d.id}">
-    <div class="row1"><span class="id">${d.id}</span><span class="chan">${d.channel}</span></div>
+  const task=!!d.parent, blk=isBlocked(d);
+  return `<div class="card b-${d.status}${blk?' blocked':''}" draggable="true" data-id="${d.id}">
+    <div class="row1"><span class="id">${d.id}</span>${task
+      ?`<span class="ptag">↳ ${byId[d.parent]?byId[d.parent].channel:'group'}</span>`
+      :`<span class="chan">${d.channel}</span>`}</div>
     <div class="title">${d.media}</div>
-    <div class="sub">${d.date} · ${d.source}</div>
-    <div class="metrics">${chip("R",d.reach)}${chip("E",d.eng)}${chip("C",d.clicks)}${chip("T",d.trials)}</div>
+    <div class="sub">${d.date}${task?"":" · "+d.source}</div>
+    ${depBadge(d)}
+    ${task?"":`<div class="metrics">${chip("R",d.reach)}${chip("E",d.eng)}${chip("C",d.clicks)}${chip("T",d.trials)}</div>`}
   </div>`;
 }
 function render(){
+  byId={}; DATA.forEach(d=>byId[d.id]=d);
+  const parents=new Set(DATA.filter(d=>d.parent).map(d=>d.parent));
+  const visible=DATA.filter(d=>!parents.has(d.id)&&(!filter||d.channel===filter));
   const board=$("#board");board.innerHTML="";
   COLUMNS.forEach(st=>{
-    const items=DATA.filter(d=>d.status===st&&(!filter||d.channel===filter));
+    const items=visible.filter(d=>d.status===st);
+    const standalone=items.filter(d=>!d.parent);
+    const groups={}; items.filter(d=>d.parent).forEach(d=>{(groups[d.parent]=groups[d.parent]||[]).push(d);});
     const col=document.createElement("div");
     col.className="col";col.dataset.status=st;
-    col.innerHTML=`<h2><span class="dot d-${st}"></span>${LABEL[st]}<span class="n">${items.length}</span></h2>`
-      +items.map(cardHTML).join("");
-    board.appendChild(col);
+    let h=`<h2><span class="dot d-${st}"></span>${LABEL[st]}<span class="n">${items.length}</span></h2>`;
+    h+=standalone.map(cardHTML).join("");
+    Object.keys(groups).forEach(pid=>{
+      h+=`<div class="grp">↳ ${byId[pid]?byId[pid].channel:pid} launch</div>`;
+      h+=groups[pid].map(cardHTML).join("");
+    });
+    col.innerHTML=h;board.appendChild(col);
   });
   wireDnD();
 }
@@ -157,25 +193,21 @@ function wireDnD(){
     col.addEventListener("dragleave",()=>col.classList.remove("drag-over"));
     col.addEventListener("drop",e=>{
       e.preventDefault();col.classList.remove("drag-over");
-      const d=DATA.find(x=>x.id===dragId);
-      if(d){d.status=col.dataset.status;render();}
+      const d=byId[dragId]; if(d){d.status=col.dataset.status;render();}
     });
   });
 }
-/* Export: rebuild the note's table body from current state */
 function exportRows(){
-  const cell=v=>v==null?"—":v;
-  const rows=DATA.map(d=>`| ${d.id} | ${d.status} | ${d.date} | ${d.source} | ${d.media} | ${d.channel} | ${d.path} | ${cell(d.reach)} | ${cell(d.eng)} | ${cell(d.clicks)} | ${cell(d.trials)} | ${cell(d.foll)} | ${d.outcome} |`);
+  const c=v=>v==null?"—":v;
+  const rows=DATA.map(d=>`| ${d.id} | ${d.status} | ${d.date} | ${d.source} | ${d.media} | ${d.channel} | ${d.path} | ${c(d.reach)} | ${c(d.eng)} | ${c(d.clicks)} | ${c(d.trials)} | ${c(d.foll)} | ${d.outcome} | ${d.parent||"—"} | ${d.blockedBy&&d.blockedBy.length?d.blockedBy.join(", "):"—"} |`);
   $("#out").value=rows.join("\n");
   $("#modal").classList.add("on");
 }
 $("#exportBtn").addEventListener("click",exportRows);
 $("#closeBtn").addEventListener("click",()=>$("#modal").classList.remove("on"));
-$("#copyBtn").addEventListener("click",()=>{
-  const t=$("#out");t.select();
+$("#copyBtn").addEventListener("click",()=>{const t=$("#out");t.select();
   try{document.execCommand("copy");$("#copyBtn").textContent="Copied ✓";
-    setTimeout(()=>$("#copyBtn").textContent="Copy to clipboard",1500);}catch(e){}
-});
+    setTimeout(()=>$("#copyBtn").textContent="Copy to clipboard",1500);}catch(e){}});
 if(SYNCED)$("#synced").textContent="· last synced "+SYNCED;
 initFilter();render();
 </script>
