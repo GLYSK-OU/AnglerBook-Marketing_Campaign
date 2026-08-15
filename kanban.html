@@ -10,7 +10,7 @@
     --green-1:#16543C; --green-2:#0A2C20; --cream:#F4F1E8; --sand:#EFE9DB;
     --ink:#123A2A; --muted:#5c6f64; --line:#d9d2c2; --card:#ffffff;
     --plan:#b7892f; --doing:#3a6ea5; --waiting:#c25e2a; --pub:#2e7d5b; --done:#3f7a4e;
-    --block:#b23b3b;
+    --aborted:#9a9a9a; --block:#b23b3b;
     --shadow:0 1px 3px rgba(10,44,32,.10),0 6px 18px rgba(10,44,32,.06);
   }
   *{box-sizing:border-box}
@@ -30,8 +30,8 @@
   .tools button:hover{background:rgba(255,255,255,.22)}
   .tools select option{color:#123A2A}
   main{padding:18px}
-  .board{display:grid;grid-template-columns:repeat(5,minmax(220px,1fr));gap:14px;align-items:start}
-  @media(max-width:1050px){.board{grid-auto-flow:column;grid-template-columns:none;grid-auto-columns:80%;overflow-x:auto;scroll-snap-type:x mandatory}}
+  .board{display:grid;grid-template-columns:repeat(6,minmax(195px,1fr));gap:12px;align-items:start}
+  @media(max-width:1200px){.board{grid-auto-flow:column;grid-template-columns:none;grid-auto-columns:80%;overflow-x:auto;scroll-snap-type:x mandatory}}
   .col{background:var(--sand);border:1px solid var(--line);border-radius:14px;padding:10px;min-height:120px;scroll-snap-align:start}
   .col.drag-over{outline:2px dashed var(--green-1);outline-offset:-4px;background:#e7e0cf}
   .col h2{margin:2px 4px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;display:flex;
@@ -40,7 +40,7 @@
   .col .n{margin-left:auto;background:#fff;border:1px solid var(--line);border-radius:20px;
     padding:0 8px;font-size:11px;font-weight:700;color:var(--muted)}
   .d-planned{background:var(--plan)} .d-doing{background:var(--doing)}
-  .d-waiting{background:var(--waiting)} .d-published{background:var(--pub)} .d-done{background:var(--done)}
+  .d-waiting{background:var(--waiting)} .d-published{background:var(--pub)} .d-done{background:var(--done)} .d-aborted{background:var(--aborted)}
   .grp{font-size:10.5px;font-weight:700;color:var(--green-1);letter-spacing:.03em;text-transform:uppercase;
     margin:8px 2px 5px;padding-left:6px;border-left:3px solid var(--green-1)}
   .card{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--line);
@@ -49,6 +49,8 @@
   .card.dragging{opacity:.45}
   .card.b-planned{border-left-color:var(--plan)} .card.b-doing{border-left-color:var(--doing)}
   .card.b-waiting{border-left-color:var(--waiting)} .card.b-published{border-left-color:var(--pub)} .card.b-done{border-left-color:var(--done)}
+  .card.b-aborted{border-left-color:var(--aborted);background:#f5f4f1;opacity:.8}
+  .card.b-aborted .title{text-decoration:line-through;color:var(--muted)}
   .card.blocked{border-left-color:var(--block);background:#fdf6f4}
   .card .row1{display:flex;align-items:center;gap:6px;margin-bottom:5px}
   .card .id{font-size:10.5px;font-weight:800;color:var(--muted);letter-spacing:.03em}
@@ -132,10 +134,10 @@ const DATA = [
  {id:"A008",status:"planned",date:"2026-09-01",source:"First 100 Anglers",media:"free offer codes + DM",channel:"Creator",path:"(outreach list)",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"Seed 15\u201320 fly-fishing creators",parent:null,blockedBy:[]},
  {id:"A009",status:"planned",date:"2026-09-08",source:"First 100 Anglers",media:"thumbnail + tagline",channel:"Product Hunt",path:"(optional)",reach:null,eng:null,clicks:null,trials:null,foll:null,outcome:"Optional week-5 spike",parent:null,blockedBy:[]}
 ];
-const SYNCED = "2026-08-15 13:42";
+const SYNCED = "2026-08-15 13:58";
 
-const COLUMNS=["planned","doing","waiting","published","done"];
-const LABEL={planned:"Planned",doing:"Doing",waiting:"Waiting",published:"Published",done:"Done"};
+const COLUMNS=["planned","doing","waiting","published","done","aborted"];
+const LABEL={planned:"Planned",doing:"Doing",waiting:"Waiting",published:"Published",done:"Done",aborted:"Aborted"};
 const DONE=new Set(["published","done"]);
 const $=s=>document.querySelector(s);
 let filter="";
